@@ -1,0 +1,36 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.util.List;
+
+import com.proj.testapi.entity.Course;
+import com.proj.testapi.service.CourseService;
+
+import jakarta.servlet.http.HttpSession;
+
+public class CourseServiceImpl implements CourseService {
+
+	@Override
+	public Course createCourse(Course course, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Course> getAllCourses() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Course updateCourse(Long courseId, Course course, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String deleteCourse(Long courseId, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

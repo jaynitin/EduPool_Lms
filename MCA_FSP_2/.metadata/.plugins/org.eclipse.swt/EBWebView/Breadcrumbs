@@ -1,0 +1,30 @@
+15:48:47 Microsoft.Shutdown.TabStripModel.CloseTabs
+15:48:47 Microsoft.Shutdown.TabStripModel.CloseTabs_EdgeBeforeClosingAllTabs
+15:48:47 Microsoft.Shutdown.TabStripModel.InternalCloseTabsImpl
+15:48:47 Microsoft.Shutdown.TabStripModel.InternalCloseTabsImpl_TabClosable
+15:48:47 Microsoft.Shutdown.TabStripModel.InternalCloseTabsImpl_ClosingAll
+15:48:47 Microsoft.Shutdown.TabStripModel.CloseWebContentses
+15:48:47 Microsoft.Shutdown.TabStripModel.CloseWebContentses_FastShutdown
+15:48:47 Microsoft.Shutdown.TabStripModel.ShouldRunUnloadListenerBeforeClosing_false
+15:48:47 Tab5 RenderProcessGone
+15:48:47 Microsoft.UnloadController.ClearUnloadState
+15:48:47 Microsoft.Shutdown.TabStripModel.RunUnloadListenerBeforeClosing_false
+15:48:47 Microsoft.Shutdown.TabStripModel.InternalCloseTabsImpl_ClosedAll
+15:48:47 Microsoft.Shutdown.TabStripModel.SendDetachWebContentsNotifications
+15:48:47 Browser5 Close Tab5 at 0
+15:48:47 Microsoft.UnloadController.ClearUnloadState
+15:48:47 Tab5 WebContentsDestroyed
+15:48:47 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
+15:48:47 Microsoft.UnloadController.HasCompletedUnloadProcessing_True
+15:48:47 Microsoft.Shutdown.OnWindowClosing
+15:48:47 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
+15:48:47 Microsoft.UnloadController.HasCompletedUnloadProcessing_True
+15:48:47 Microsoft.Shutdown.OnWindowClosing_MaybeClearBrowsingDataOnExit
+15:48:47 Microsoft.Shutdown.OnWindowClosing_ClearBrowsingDataOnExitNotInProgress
+15:48:47 Microsoft.Shutdown.OnWindowClosingPostClearBrowsingData_NoBrowsingDataCleared
+15:48:47 Widget Closed: BrowserWidget
+15:48:47 Microsoft.UnloadController.TabStripEmpty
+15:48:47 Microsoft.UnloadController.HasCompletedUnloadProcessing_True
+15:48:47 Microsoft.Shutdown.OnWindowClosing
+15:48:47 Microsoft.Shutdown.OnWindowClosing_DeleteScheduled
+15:48:47 Microsoft.Browser_Removed

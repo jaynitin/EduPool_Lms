@@ -1,0 +1,5 @@
+package com.proj.testapi.controller;
+
+public class UserController {
+
+}

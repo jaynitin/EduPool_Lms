@@ -1,0 +1,54 @@
+package com.proj.testapi.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.proj.testapi.entity.User;
+import com.proj.testapi.service.UserService;
+
+import jakarta.servlet.http.HttpSession;
+
+@RestController
+@RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+public class UserController {
+
+    @Autowired
+    private UserService uservice;
+
+    // Sign Up
+    @PostMapping("/reg")
+    public String register(@RequestBody User user) {
+        uservice.signup(user);
+        return "User Added!";
+    }
+
+    // Log In
+    @PostMapping("/login")
+    public String login(@RequestBody User user, HttpSession session) {
+
+        User loggedInUser = uservice.signin(user.getEmail(), user.getPassword(), session);
+
+        if (loggedInUser == null) {
+            return "Invalid Credentials";
+        }
+
+        return "Login Successful";
+    }
+
+    // Log Out
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "Logged Out!";
+    }
+    
+    @GetMapping("/me")
+    public String me(HttpSession session) {
+    	String username = (String) session.getAttribute("uname");
+    	String role = (String) session.getAttribute("urole");
+    	if (username == null) {
+    		return null;
+    	}
+    	return "Name: "+ username +" Role: "+role;
+}

@@ -1,0 +1,103 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.proj.testapi.entity.Course;
+import com.proj.testapi.entity.Role;
+import com.proj.testapi.entity.User;
+import com.proj.testapi.repository.CourseRepository;
+import com.proj.testapi.service.CourseService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Service
+public class CourseServiceImpl implements CourseService {
+
+	@Autowired
+    private CourseRepository courseRepo;
+	public Course createCourse(Course course, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        if (user.getRole() != Role.INSTRUCTOR) {
+            throw new RuntimeException("Only instructors can create courses");
+        }
+
+        course.setInstructor(user);
+
+        return courseRepo.save(course);
+    }
+
+	public List<Course> getAllCourses() {
+		return courseRepo.findAll();
+	}
+
+	public Course updateCourse(Long courseId, Course course, HttpSession session) {
+		User user = (User) session.getAttribute("user");
+
+        Course existingCourse = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        if (!existingCourse.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to update this course");
+        }
+        
+        if (course.getTitle() != null) {
+            existingCourse.setTitle(course.getTitle());
+        }
+
+        if (course.getDescription() != null) {
+            existingCourse.setDescription(course.getDescription());
+        }
+
+        if (course.getCategory() != null) {
+            existingCourse.setCategory(course.getCategory());
+        }
+
+        if (course.getPrice() != null) {
+            existingCourse.setPrice(course.getPrice());
+        }
+
+        if (course.getDuration() != 0) {
+            existingCourse.setDuration(course.getDuration());
+        }
+        /*existingCourse.setTitle(course.getTitle());
+        existingCourse.setDescription(course.getDescription());
+        existingCourse.setCategory(course.getCategory());
+        existingCourse.setPrice(course.getPrice());
+        existingCourse.setDuration(course.getDuration());*/
+
+        return courseRepo.save(existingCourse);
+	}
+
+	public String deleteCourse(Long courseId, HttpSession session) {
+		
+		User user = (User) session.getAttribute("user");
+		
+		if (user == null) {
+	        throw new RuntimeException("Please login first");
+	    }
+
+        Course course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        if (!course.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to delete this course");
+        }
+
+        courseRepo.delete(course);
+
+        return "Course deleted successfully";
+	}
+
+}

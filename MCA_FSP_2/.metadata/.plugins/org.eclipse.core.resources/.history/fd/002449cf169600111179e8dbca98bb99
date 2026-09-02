@@ -1,0 +1,20 @@
+package com.proj.testapi.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.proj.testapi.entity.Purchase;
+
+public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
+
+    List<Purchase> findByUserId(Long userId);
+
+    boolean existsByUserIdAndCourseId(Long userId, Long courseId);
+    long countByCourseIdAndStatus(Long courseId, String status);
+
+    List<Purchase> findByCourseIdAndStatus(Long courseId, String status);
+
+    List<Purchase> findByUserIdAndStatus(Long userId, String status);
+}
+

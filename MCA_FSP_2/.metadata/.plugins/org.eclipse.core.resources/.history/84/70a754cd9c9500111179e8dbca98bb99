@@ -1,0 +1,84 @@
+package com.proj.testapi.controller;
+
+import java.util.List;
+
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.proj.testapi.entity.Purchase;
+import com.proj.testapi.entity.User;
+import com.proj.testapi.service.PurchaseService;
+
+@RestController
+@RequestMapping("/purchase")
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowCredentials = "true"
+)
+public class PurchaseController {
+
+    @Autowired
+    private PurchaseService purchaseService;
+
+    @PostMapping("/buy/{courseId}")
+    public Purchase buyCourse(
+            @PathVariable Long courseId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("loginUser");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        Long userId = user.getId();
+
+        return purchaseService.buyCourse(
+                userId,
+                courseId
+        );
+    }
+
+  
+    @GetMapping("/my-purchases")
+    public List<Purchase> myPurchases(
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("loginUser");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        Long userId = user.getId();
+
+        return purchaseService.getMyCourses(userId);
+    }
+
+  
+    @GetMapping("/check/{courseId}")
+    public boolean checkPurchase(
+            @PathVariable Long courseId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("loginUser");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        Long userId = user.getId();
+
+        return purchaseService.hasPurchased(
+                userId,
+                courseId
+        );
+    }
+}

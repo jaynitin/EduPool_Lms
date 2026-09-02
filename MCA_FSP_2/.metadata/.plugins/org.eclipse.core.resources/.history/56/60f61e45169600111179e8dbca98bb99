@@ -1,0 +1,171 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.util.List;
+
+import com.proj.testapi.entity.Lesson;
+import com.proj.testapi.service.LessonService;
+
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.proj.testapi.entity.Course;
+import com.proj.testapi.entity.Lesson;
+import com.proj.testapi.entity.Role;
+import com.proj.testapi.entity.User;
+import com.proj.testapi.repository.CourseRepository;
+import com.proj.testapi.repository.LessonRepository;
+import com.proj.testapi.service.LessonService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Service
+public class LessonServiceImpl implements LessonService {
+
+	@Autowired
+    private LessonRepository lessonRepo;
+
+    @Autowired
+    private CourseRepository courseRepo;
+
+
+    // INSTRUCTOR: Create lesson
+    public Lesson createLesson(Long courseId, Lesson lesson, HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        if (user.getRole() != Role.INSTRUCTOR) {
+            throw new RuntimeException("Only instructors can add lessons");
+        }
+
+        Course course = courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        // Check that this instructor owns the course
+        if (!course.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to add lessons to this course");
+        }
+
+        lesson.setCourse(course);
+
+        return lessonRepo.save(lesson);
+    }
+
+
+    // STUDENT / INSTRUCTOR: Get all lessons of a course
+    public List<Lesson> getLessonsByCourse(Long courseId, HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        // Check that course exists
+        courseRepo.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        return lessonRepo.findByCourseId(courseId);
+    }
+
+
+    // STUDENT / INSTRUCTOR: Get one lesson
+    public Lesson getLessonById(Long lessonId, HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        return lessonRepo.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+    }
+
+
+    // INSTRUCTOR: Update lesson
+    public Lesson updateLesson(
+            Long lessonId,
+            Lesson lesson,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        if (user.getRole() != Role.INSTRUCTOR) {
+            throw new RuntimeException("Only instructors can update lessons");
+        }
+
+        Lesson existingLesson = lessonRepo.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        Course course = existingLesson.getCourse();
+
+        // Check course ownership
+        if (!course.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to update this lesson");
+        }
+
+        if (lesson.getTitle() != null) {
+            existingLesson.setTitle(lesson.getTitle());
+        }
+
+        if (lesson.getDescription() != null) {
+            existingLesson.setDescription(lesson.getDescription());
+        }
+
+        if (lesson.getVideoUrl() != null) {
+            existingLesson.setVideoUrl(lesson.getVideoUrl());
+        }
+
+        if (lesson.getNotesUrl() != null) {
+            existingLesson.setNotesUrl(lesson.getNotesUrl());
+        }
+
+        if (lesson.getLessonNumber() != 0) {
+            existingLesson.setLessonNumber(lesson.getLessonNumber());
+        }
+
+        return lessonRepo.save(existingLesson);
+    }
+
+
+    // INSTRUCTOR: Delete lesson
+    public String deleteLesson(Long lessonId, HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        if (user.getRole() != Role.INSTRUCTOR) {
+            throw new RuntimeException("Only instructors can delete lessons");
+        }
+
+        Lesson lesson = lessonRepo.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        Course course = lesson.getCourse();
+
+        // Check course ownership
+        if (!course.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to delete this lesson");
+        }
+
+        lessonRepo.delete(lesson);
+
+        return "Lesson deleted successfully";
+    }
+}

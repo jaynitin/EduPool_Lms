@@ -1,0 +1,39 @@
+package com.proj.testapi.service.serviceimpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.proj.testapi.entity.User;
+import com.proj.testapi.repository.UserRepository;
+import com.proj.testapi.service.UserService;
+
+import jakarta.servlet.http.HttpSession;
+@Service
+public class UserServiceImpl implements UserService{
+
+	@Autowired 
+	private UserRepository userRepo;
+	public void signup(User user) {
+		userRepo.save(user);
+		
+	}
+
+	public User signin(String email, String password, HttpSession session) {
+		User user = userRepo.findByEmail(email).orElse(null);
+
+        if (user != null && user.getPassword().equals(password)) {
+            session.setAttribute("user", user);
+            session.setAttribute("name", user.getName());
+    		session.setAttribute("email", user.getEmail());
+    		session.setAttribute("role", user.getRole().name());
+            return user;
+        }
+
+		return null;
+	}
+
+	public void signout(HttpSession session) {
+		session.invalidate();
+		
+	}
+
+}

@@ -1,0 +1,86 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.proj.testapi.entity.Course;
+import com.proj.testapi.entity.Purchase;
+import com.proj.testapi.entity.User;
+
+import com.proj.testapi.repository.CourseRepository;
+import com.proj.testapi.repository.PurchaseRepository;
+import com.proj.testapi.repository.UserRepository;
+
+import com.proj.testapi.service.PurchaseService;
+
+@Service
+public class PurchaseServiceImpl implements PurchaseService {
+
+    @Autowired
+    private PurchaseRepository prepo;
+
+    @Autowired
+    private UserRepository urepo;
+
+    @Autowired
+    private CourseRepository crepo;
+
+    public Purchase buyCourse(Long userId, Long courseId) {
+
+        // Find user
+        User user = urepo.findById(userId).orElse(null);
+
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        // Find course
+        Course course = crepo.findById(courseId).orElse(null);
+
+        if (course == null) {
+            throw new RuntimeException("Course not found");
+        }
+
+        // Check duplicate purchase
+        if (prepo.existsByUserIdAndCourseId(userId, courseId)) {
+            throw new RuntimeException(
+                    "You have already purchased this course"
+            );
+        }
+
+        
+        Purchase purchase = new Purchase();
+
+        purchase.setUserId(user.getId());
+
+        purchase.setCourseId(course.getId());
+
+        purchase.setUserEmail(user.getEmail());
+
+        purchase.setAmount(course.getPrice());
+
+        purchase.setStatus("SUCCESS");
+
+        purchase.setPurchaseDate(LocalDateTime.now());
+
+        // Save purchase
+        return prepo.save(purchase);
+    }
+
+    public List<Purchase> getMyCourses(Long userId) {
+
+        return prepo.findByUserId(userId);
+    }
+
+    public boolean hasPurchased(Long userId, Long courseId) {
+
+        return prepo.existsByUserIdAndCourseId(
+                userId,
+                courseId
+        );
+    }
+}
+

@@ -1,0 +1,132 @@
+# CourseEntity
+private String thumbnailUrl;
+
+public String getThumbnailUrl() {
+    return thumbnailUrl;
+}
+
+public void setThumbnailUrl(String thumbnailUrl) {
+    this.thumbnailUrl = thumbnailUrl;
+}
+
+# CourseController
+@PutMapping("/thumbnail/{id}")
+public ResponseEntity<?> uploadThumbnail(
+        @PathVariable Long id,
+        @RequestParam("thumbnail") MultipartFile thumbnail,
+        HttpSession session) {
+
+    try {
+        return ResponseEntity.ok(
+                cservice.uploadThumbnail(id, thumbnail, session)
+        );
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(e.getMessage());
+    }
+}
+
+# CourseService
+import org.springframework.web.multipart.MultipartFile;
+Course uploadThumbnail(
+        Long courseId,
+        MultipartFile thumbnail,
+        HttpSession session
+);
+
+# CourseServiceImpl
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+
+import org.springframework.web.multipart.MultipartFile;
+
+public Course uploadThumbnail(
+        Long courseId,
+        MultipartFile thumbnail,
+        HttpSession session) {
+
+    User user = (User) session.getAttribute("user");
+
+    if (user == null) {
+        throw new RuntimeException("Please login first");
+    }
+
+    if (user.getRole() != Role.INSTRUCTOR) {
+        throw new RuntimeException(
+                "Only instructors can upload thumbnails");
+    }
+
+    Course course = crepo.findById(courseId)
+            .orElseThrow(() ->
+                    new RuntimeException("Course not found"));
+
+    if (!course.getInstructor().getId().equals(user.getId())) {
+        throw new RuntimeException(
+                "You are not allowed to modify this course");
+    }
+
+    if (thumbnail == null || thumbnail.isEmpty()) {
+        throw new RuntimeException(
+                "Please select a thumbnail");
+    }
+
+    // Create uploads/thumbnails directory
+    Path uploadPath = Paths.get("uploads/thumbnails");
+
+    try {
+        Files.createDirectories(uploadPath);
+
+        // Generate unique filename
+        String fileName =
+                UUID.randomUUID().toString()
+                + "_"
+                + thumbnail.getOriginalFilename();
+
+        Path filePath = uploadPath.resolve(fileName);
+
+        // Save file
+        Files.copy(
+                thumbnail.getInputStream(),
+                filePath,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+
+        // Save URL/path in Course
+        course.setThumbnailUrl(
+                "/uploads/thumbnails/" + fileName
+        );
+
+        return crepo.save(course);
+
+    } catch (IOException e) {
+        throw new RuntimeException(
+                "Failed to upload thumbnail");
+    }
+}
+
+config/WebConfig.java // ye extra banana hai, so that the frontend can access the image, the image can be kept in uploads (folder), it will be a folder in line with src (outside src, same parent of src)
+
+package com.proj.testapi.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+        public void addResourceHandlers(ResourceHandlerRegistry registry) {
+
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
+    }
+}
+
+// if the file is saved as uploads/thumbnails/abc123_python.jpg
+// then the browser can access: http://localhost:8080/uploads/thumbnails/abc123_python.jpg
+// database contains /uploads/thumbnails/abc123_python.jpg

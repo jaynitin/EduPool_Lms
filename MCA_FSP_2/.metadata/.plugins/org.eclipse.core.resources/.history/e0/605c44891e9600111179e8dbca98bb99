@@ -1,0 +1,5 @@
+package com.proj.testapi.service.serviceimpl;
+
+public class CourseProgressServiceImpl {
+
+}

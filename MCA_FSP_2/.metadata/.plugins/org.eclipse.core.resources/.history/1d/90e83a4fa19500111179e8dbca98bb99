@@ -1,0 +1,92 @@
+package com.proj.testapi.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "lessons")
+public class Lesson {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String title;
+
+    private String description;
+
+    private String videoUrl;
+
+    private String notesUrl;
+
+    private int lessonNumber;
+
+    private int courseId;
+
+
+    public Lesson() {
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+
+    public String getNotesUrl() {
+        return notesUrl;
+    }
+
+    public void setNotesUrl(String notesUrl) {
+        this.notesUrl = notesUrl;
+    }
+
+
+    public int getLessonNumber() {
+        return lessonNumber;
+    }
+
+    public void setLessonNumber(int lessonNumber) {
+        this.lessonNumber = lessonNumber;
+    }
+
+
+    public int getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(int courseId) {
+        this.courseId = courseId;
+    }
+}
+

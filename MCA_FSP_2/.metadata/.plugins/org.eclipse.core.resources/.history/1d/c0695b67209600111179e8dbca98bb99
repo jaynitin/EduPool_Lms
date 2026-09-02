@@ -1,0 +1,237 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.proj.testapi.entity.Course;
+import com.proj.testapi.entity.CourseProgress;
+import com.proj.testapi.entity.Lesson;
+import com.proj.testapi.entity.User;
+import com.proj.testapi.repository.CourseProgressRepository;
+import com.proj.testapi.repository.CourseRepository;
+import com.proj.testapi.repository.LessonRepository;
+import com.proj.testapi.service.CourseProgressService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Service
+public class CourseProgressServiceImpl
+        implements CourseProgressService {
+
+    @Autowired
+    private CourseProgressRepository progrepo;
+
+    @Autowired
+    private LessonRepository lrepo;
+
+    @Autowired
+    private CourseRepository crepo;
+
+
+    // STUDENT - MARK LESSON AS COMPLETED
+
+    public CourseProgress completeLesson(
+            Long lessonId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        String role = (String) session.getAttribute("role");
+
+        if (!"STUDENT".equals(role)) {
+            throw new RuntimeException(
+                    "Only students can mark lessons as completed");
+        }
+
+        // Find lesson
+        Lesson lesson = lrepo.findById(lessonId)
+                .orElseThrow(() ->
+                        new RuntimeException("Lesson not found"));
+
+        // Get the course to which this lesson belongs
+        Course course = lesson.getCourse();
+
+        // Find existing progress
+        CourseProgress progress =
+                progrepo
+                        .findByStudentIdAndCourseId(
+                                user.getId(),
+                                course.getId()
+                        )
+                        .orElse(null);
+
+        // If progress doesn't exist, create it
+        if (progress == null) {
+
+            progress = new CourseProgress();
+
+            progress.setStudent(user);
+            progress.setCourse(course);
+        }
+
+        // Add lesson to completed lessons
+        progress.getCompletedLessons().add(lesson);
+
+        return progrepo.save(progress);
+    }
+
+
+    // STUDENT - VIEW OWN PROGRESS
+
+    public Map<String, Object> getMyProgress(
+            Long courseId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        String role = (String) session.getAttribute("role");
+
+        if (!"STUDENT".equals(role)) {
+            throw new RuntimeException(
+                    "Only students can view their progress");
+        }
+
+        Course course = crepo.findById(courseId)
+                .orElseThrow(() ->
+                        new RuntimeException("Course not found"));
+
+        int totalLessons =
+                lrepo.findByCourseId(courseId).size();
+
+        CourseProgress progress =
+                progrepo
+                        .findByStudentIdAndCourseId(
+                                user.getId(),
+                                courseId
+                        )
+                        .orElse(null);
+
+        int completedLessons = 0;
+
+        if (progress != null) {
+            completedLessons =
+                    progress.getCompletedLessons().size();
+        }
+
+        double percentage = 0;
+
+        if (totalLessons > 0) {
+            percentage =
+                    ((double) completedLessons / totalLessons) * 100;
+        }
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("courseId", course.getId());
+        result.put("courseName", course.getTitle());
+        result.put("completedLessons", completedLessons);
+        result.put("totalLessons", totalLessons);
+        result.put("progress", percentage);
+
+        return result;
+    }
+
+
+    // =====================================================
+    // INSTRUCTOR - VIEW STUDENT PROGRESS
+    // =====================================================
+
+    @Override
+    public List<Map<String, Object>> getCourseStudentProgress(
+            Long courseId,
+            HttpSession session) {
+
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
+
+        String role = (String) session.getAttribute("role");
+
+        if (!"INSTRUCTOR".equals(role)) {
+            throw new RuntimeException(
+                    "Only instructors can view student progress");
+        }
+
+        // Find course
+        Course course = crepo.findById(courseId)
+                .orElseThrow(() ->
+                        new RuntimeException("Course not found"));
+
+        // Make sure this instructor owns the course
+        if (!course.getInstructor().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to view this course");
+        }
+
+        int totalLessons =
+                lrepo.findByCourseId(courseId).size();
+
+        // Get all progress records for this course
+        List<CourseProgress> progressList =
+                progrepo.findByCourseId(courseId);
+
+        List<Map<String, Object>> result =
+                new ArrayList<>();
+
+        for (CourseProgress progress : progressList) {
+
+            int completedLessons =
+                    progress.getCompletedLessons().size();
+
+            double percentage = 0;
+
+            if (totalLessons > 0) {
+                percentage =
+                        ((double) completedLessons / totalLessons)
+                                * 100;
+            }
+
+            Map<String, Object> studentData =
+                    new HashMap<>();
+
+            studentData.put(
+                    "studentId",
+                    progress.getStudent().getId()
+            );
+
+            studentData.put(
+                    "studentName",
+                    progress.getStudent().getName()
+            );
+
+            studentData.put(
+                    "completedLessons",
+                    completedLessons
+            );
+
+            studentData.put(
+                    "totalLessons",
+                    totalLessons
+            );
+
+            studentData.put(
+                    "progress",
+                    percentage
+            );
+
+            result.add(studentData);
+        }
+
+        return result;
+    }
+}

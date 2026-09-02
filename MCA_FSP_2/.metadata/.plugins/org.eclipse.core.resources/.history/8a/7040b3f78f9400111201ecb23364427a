@@ -1,0 +1,5 @@
+package com.proj.testapi.config;
+
+public class SecurityConfig {
+
+}

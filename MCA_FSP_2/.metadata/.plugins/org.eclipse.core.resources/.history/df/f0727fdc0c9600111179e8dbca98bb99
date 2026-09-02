@@ -1,0 +1,42 @@
+package com.proj.testapi.service.serviceimpl;
+
+import java.util.List;
+
+import com.proj.testapi.entity.Lesson;
+import com.proj.testapi.service.LessonService;
+
+import jakarta.servlet.http.HttpSession;
+
+public class LessonServiceImpl implements LessonService {
+
+	@Override
+	public Lesson createLesson(Long courseId, Lesson lesson, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Lesson> getLessonsByCourse(Long courseId, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Lesson getLessonById(Long lessonId, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Lesson updateLesson(Long lessonId, Lesson lesson, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String deleteLesson(Long lessonId, HttpSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,15 @@
+package com.proj.testapi.service;
+
+import java.util.List;
+
+import com.proj.testapi.entity.Purchase;
+
+public interface PurchaseService {
+
+    Purchase buyCourse(Long userId, Long courseId);
+
+    List<Purchase> getMyCourses(Long userId);
+
+    boolean hasPurchased(Long userId, Long courseId);
+}
+
